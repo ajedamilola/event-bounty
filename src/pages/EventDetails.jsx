@@ -1,13 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Clock, User, ArrowLeft } from 'lucide-react';
+import { Calendar, User, ArrowLeft } from 'lucide-react';
+import { getEvent, listAllEvents, registerForEvent } from '../utils/etherum';
 
 // Demo data
-const events = [
-  { id: 1, title: 'React Meetup', description: 'A meetup for React developers', date: '2023-07-15' },
-  { id: 2, title: 'Blockchain Workshop', description: 'Learn about blockchain technology', date: '2023-07-22' },
-  { id: 3, title: 'AI Conference', description: 'Exploring the latest in AI', date: '2023-07-29' },
-];
 
 function EventDetails() {
   const { id } = useParams();
@@ -15,16 +11,29 @@ function EventDetails() {
   const [name, setName] = useState('');
   const [registered, setRegistered] = useState(false);
 
-  const event = events.find(e => e.id === parseInt(id));
+  const [event, setEvent] = useState(null)
+
+  async function fetchData() {
+    //FIXME: Fix this up later
+    let _events = await listAllEvents();
+    _events.reverse()
+    setEvent(_events.find(e => e.id == id))
+    const data = await getEvent(Number(id));
+    console.log(data)
+  }
+
+
+  useEffect(() => {
+    fetchData()
+  }, [])
 
   if (!event) {
     return <div>Event not found</div>;
   }
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
-    // Here you would typically send this data to your backend or smart contract
-    console.log(`Registering ${name} for event ${id}`);
+    await registerForEvent(id, name);
     setRegistered(true);
   };
 
@@ -62,7 +71,7 @@ function EventDetails() {
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             </div>
           </div>
-          <button type="submit" className="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600 flex items-center">
+          <button type="submit" onClick={handleRegister} className="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600 flex items-center">
             <User className="mr-2" size={20} />
             Register for Event
           </button>

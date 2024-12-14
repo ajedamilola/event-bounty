@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Calendar, Clock, FileText, Save, Edit2, Trash2 } from 'lucide-react';
-import { createEvent } from '../utils/etherum';
+import { Calendar, Clock, FileText, Save, Edit2, Trash2, Users2 } from 'lucide-react';
+import { address, createEvent, listAllEvents } from '../utils/etherum';
 
 // Demo data - in a real app, this would be fetched from a backend or smart contract
-let events = [
-  { id: 1, title: 'React Meetup', description: 'A meetup for React developers', date: '2023-07-15' },
-  { id: 2, title: 'Blockchain Workshop', description: 'Learn about blockchain technology', date: '2023-07-22' },
-  { id: 3, title: 'AI Conference', description: 'Exploring the latest in AI', date: '2023-07-29' },
-];
 
 function CreateEvent() {
   const [title, setTitle] = useState('');
@@ -17,6 +12,16 @@ function CreateEvent() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
+  const [events, setEvents] = useState([])
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      let _events = await listAllEvents();
+      _events.reverse()
+      setEvents(_events.filter(e => e.owner == address));
+    };
+    fetchEvents();
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -27,7 +32,7 @@ function CreateEvent() {
         setDate(event.date);
       }
     }
-  }, [id]);
+  }, [id, events]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,13 +40,13 @@ function CreateEvent() {
     try {
       if (id) {
         // Update existing event
-        events = events.map(event =>
+        setEvents(events.map(event =>
           event.id === parseInt(id) ? { ...event, title, description, date } : event
-        );
+        ));
       } else {
         // Create new event
         await createEvent(title, description, date);
-        events.push({ id: events.length + 1, title, description, date });
+        setEvents([{ id: events.length + 1, title, description, date }, ...events]);
 
       }
       // Reset form and redirect
@@ -57,7 +62,7 @@ function CreateEvent() {
   };
 
   const handleDelete = (eventId) => {
-    events = events.filter(event => event.id !== eventId);
+    setEvents(events.filter(event => event.id !== eventId));
     navigate('/');
   };
 
@@ -130,6 +135,13 @@ function CreateEvent() {
               >
                 <Edit2 className="mr-1" size={16} />
                 Edit
+              </button>
+              <button
+                onClick={() => navigate(`/attendees/${event.id}`)}
+                className="bg-blue-500 text-white px-3 py-1 rounded-md hover:bg-blue-600 flex items-center"
+              >
+                <Users2 className="mr-1" size={16} />
+                Attendees
               </button>
               <button
                 onClick={() => handleDelete(event.id)}

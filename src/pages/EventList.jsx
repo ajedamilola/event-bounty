@@ -1,20 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, User } from 'lucide-react';
 import { listAllEvents } from '../utils/etherum';
 
 // Demo data
-const events = [
-  { id: 1, title: 'React Meetup', description: 'A meetup for React developers', date: '2023-07-15' },
-  { id: 2, title: 'Blockchain Workshop', description: 'Learn about blockchain technology', date: '2023-07-22' },
-  { id: 3, title: 'AI Conference', description: 'Exploring the latest in AI', date: '2023-07-29' },
-];
 function EventList() {
-
+  const [events, setEvents] = useState([])
   useEffect(() => {
     const fetchEvents = async () => {
-      const events = await listAllEvents();
-      console.log(events)
+      let _events = await listAllEvents();
+      _events.reverse()
+      setEvents(_events);
     };
     fetchEvents();
   }, []);

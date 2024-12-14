@@ -1,18 +1,58 @@
 import { ethers } from 'ethers';
 const contractABI = [
-  "function createEvent(string calldata title, string calldata description, string calldata date) external",
-  "function listAll() external view returns (string memory)",
-  "function getEvent(uint256 id) external view returns (string memory)",
-  "function registerEvent(uint256 id, string calldata name) external",
-  "function listAttendees(uint256 id) external view returns (string memory)"
-];
+  {
+    "inputs": [
+      { "internalType": "string", "name": "title", "type": "string" },
+      { "internalType": "string", "name": "description", "type": "string" },
+      { "internalType": "string", "name": "date", "type": "string" }
+    ],
+    "name": "createEvent",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "listAll",
+    "outputs": [
+      { "internalType": "string", "name": "", "type": "string" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "id", "type": "uint256" },
+      { "internalType": "string", "name": "name", "type": "string" }
+    ],
+    "name": "registerEvent",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint256", "name": "id", "type": "uint256" }
+    ],
+    "name": "listAttendees",
+    "outputs": [
+      { "internalType": "string", "name": "", "type": "string" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
 
-const contractAddress = "0xE1348d2F0d1B1914d57102f778A39d49Dd116c63"; // Replace with your actual contract address
+
+
+
+const contractAddress = "0x4e8e4a578cda125b86b81d9e134508b08a413b63"; // Replace with your actual contract address
 const arbitrumTestnetChainId = '0x66eee'; // Chain ID for Arbitrum Testnet (421614 in hex)
 
 let provider;
 let signer;
 let contract;
+export let address;
 
 export async function initializeEthereum() {
   if (typeof window.ethereum !== 'undefined') {
@@ -53,7 +93,7 @@ export async function initializeEthereum() {
       provider = new ethers.BrowserProvider(window.ethereum);
       signer = await provider.getSigner();
       contract = new ethers.Contract(contractAddress, contractABI, signer);
-
+      address = await signer.getAddress();
 
       return true;
     } catch (error) {
@@ -75,13 +115,15 @@ export async function createEvent(title, description, date) {
 export async function listAllEvents() {
   if (!contract) await initializeEthereum();
   const jsonData = await contract.listAll();
-  console.log(jsonData);
-  return JSON.parse(jsonData);
+  const data = jsonData.replace(",]", "]");
+  console.log(data);
+  return JSON.parse(data);
 }
 
 export async function getEvent(id) {
   if (!contract) await initializeEthereum();
   const jsonData = await contract.getEvent(id);
+  console.log(jsonData);
   return JSON.parse(jsonData);
 }
 
@@ -95,6 +137,7 @@ export async function registerForEvent(id, name) {
 export async function listAttendees(id) {
   if (!contract) await initializeEthereum();
   const jsonData = await contract.listAttendees(id);
+  console.log(jsonData);
   return JSON.parse(jsonData);
 }
 

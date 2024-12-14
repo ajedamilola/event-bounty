@@ -5,6 +5,7 @@ import CreateEvent from './pages/CreateEvent';
 import EventList from './pages/EventList';
 import EventDetails from './pages/EventDetails';
 import WalletConnection from './components/WalletConnection';
+import Attendees from './pages/Attendees';
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
               <Route path="/create" element={<CreateEvent />} />
               <Route path="/edit/:id" element={<CreateEvent />} />
               <Route path="/event/:id" element={<EventDetails />} />
+              <Route path="/attendees/:id" element={<Attendees />} />
             </Routes>
           </div>
         </div>
