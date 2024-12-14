@@ -1,5 +1,4 @@
 import { ethers } from 'ethers';
-
 const contractABI = [
   "function createEvent(string calldata title, string calldata description, string calldata date) external",
   "function listAll() external view returns (string memory)",
@@ -8,7 +7,7 @@ const contractABI = [
   "function listAttendees(uint256 id) external view returns (string memory)"
 ];
 
-const contractAddress = "YOUR_CONTRACT_ADDRESS_HERE"; // Replace with your actual contract address
+const contractAddress = "0xE1348d2F0d1B1914d57102f778A39d49Dd116c63"; // Replace with your actual contract address
 const arbitrumTestnetChainId = '0x66eee'; // Chain ID for Arbitrum Testnet (421614 in hex)
 
 let provider;
@@ -23,7 +22,7 @@ export async function initializeEthereum() {
 
       // Check if we're on the correct network
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-      if (chainId !== arbitrumTestnetChainId) {
+      if (chainId !== 421614) {
         try {
           await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
@@ -35,15 +34,15 @@ export async function initializeEthereum() {
             await window.ethereum.request({
               method: 'wallet_addEthereumChain',
               params: [{
-                chainId: arbitrumTestnetChainId,
-                chainName: 'Arbitrum Testnet',
+                chainId: '0x66eee',
+                chainName: 'Arbitrum Sepolia',
                 nativeCurrency: {
                   name: 'Ethereum',
                   symbol: 'ETH',
                   decimals: 18
                 },
-                rpcUrls: ['https://goerli-rollup.arbitrum.io/rpc'],
-                blockExplorerUrls: ['https://goerli-rollup-explorer.arbitrum.io']
+                rpcUrls: ['https://sepolia-rollup.arbitrum.io/rpc'],
+                blockExplorerUrls: ['https://sepolia.arbiscan.io/']
               }],
             });
           } else {
@@ -51,10 +50,11 @@ export async function initializeEthereum() {
           }
         }
       }
-
-      provider = new ethers.providers.Web3Provider(window.ethereum);
-      signer = provider.getSigner();
+      provider = new ethers.BrowserProvider(window.ethereum);
+      signer = await provider.getSigner();
       contract = new ethers.Contract(contractAddress, contractABI, signer);
+
+
       return true;
     } catch (error) {
       console.error("User denied account access or another error occurred:", error);
@@ -68,14 +68,14 @@ export async function initializeEthereum() {
 
 export async function createEvent(title, description, date) {
   if (!contract) await initializeEthereum();
-  const jsonData = JSON.stringify({ title, description, date });
-  const tx = await contract.createEvent(jsonData);
+  const tx = await contract.createEvent(title, description, date);
   await tx.wait();
 }
 
 export async function listAllEvents() {
   if (!contract) await initializeEthereum();
   const jsonData = await contract.listAll();
+  console.log(jsonData);
   return JSON.parse(jsonData);
 }
 

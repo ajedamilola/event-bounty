@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Calendar, Clock, FileText, Save, Edit2, Trash2 } from 'lucide-react';
+import { createEvent } from '../utils/etherum';
 
 // Demo data - in a real app, this would be fetched from a backend or smart contract
 let events = [
@@ -13,6 +14,7 @@ function CreateEvent() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [date, setDate] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -27,23 +29,31 @@ function CreateEvent() {
     }
   }, [id]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (id) {
-      // Update existing event
-      events = events.map(event =>
-        event.id === parseInt(id) ? { ...event, title, description, date } : event
-      );
-    } else {
-      // Create new event
-      const newEvent = { id: events.length + 1, title, description, date };
-      events.push(newEvent);
+    setIsLoading(true);
+    try {
+      if (id) {
+        // Update existing event
+        events = events.map(event =>
+          event.id === parseInt(id) ? { ...event, title, description, date } : event
+        );
+      } else {
+        // Create new event
+        await createEvent(title, description, date);
+        events.push({ id: events.length + 1, title, description, date });
+
+      }
+      // Reset form and redirect
+      setTitle('');
+      setDescription('');
+      setDate('');
+      navigate('/');
+    } catch (error) {
+      console.error('Error creating event:', error);
+    } finally {
+      setIsLoading(false);
     }
-    // Reset form and redirect
-    setTitle('');
-    setDescription('');
-    setDate('');
-    navigate('/');
   };
 
   const handleDelete = (eventId) => {
@@ -96,9 +106,13 @@ function CreateEvent() {
             <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           </div>
         </div>
-        <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center">
+        <button
+          type="submit"
+          disabled={isLoading}
+          className={`bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 flex items-center ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
           <Save className="mr-2" size={20} />
-          {id ? 'Update Event' : 'Create Event'}
+          {isLoading ? 'Processing...' : id ? 'Update Event' : 'Create Event'}
         </button>
       </form>
 
@@ -133,4 +147,3 @@ function CreateEvent() {
 }
 
 export default CreateEvent;
-
