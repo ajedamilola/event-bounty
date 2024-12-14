@@ -46,7 +46,7 @@ const contractABI = [
 
 
 
-const contractAddress = "0x4e8e4a578cda125b86b81d9e134508b08a413b63"; // Replace with your actual contract address
+const contractAddress = "0xe0f4d40186c8b3bba158ba9d8425c165bcfa8bab"; // Replace with your actual contract address
 const arbitrumTestnetChainId = '0x66eee'; // Chain ID for Arbitrum Testnet (421614 in hex)
 
 let provider;
@@ -129,15 +129,14 @@ export async function getEvent(id) {
 
 export async function registerForEvent(id, name) {
   if (!contract) await initializeEthereum();
-  const jsonData = JSON.stringify({ name });
-  const tx = await contract.registerEvent(id, jsonData);
+  const tx = await contract.registerEvent(id, name);
   await tx.wait();
 }
 
 export async function listAttendees(id) {
   if (!contract) await initializeEthereum();
   const jsonData = await contract.listAttendees(id);
-  console.log(jsonData);
-  return JSON.parse(jsonData);
+  console.log(jsonData.replace(",]", "]"));
+  return JSON.parse(jsonData.replace(",]", "]"));
 }
 
